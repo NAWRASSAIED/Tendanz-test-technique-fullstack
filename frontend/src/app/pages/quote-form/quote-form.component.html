@@ -1,0 +1,170 @@
+<div class="quote-form-container">
+  <h2>Create New Quote</h2>
+
+  <!-- TODO: Display success message -->
+  <div *ngIf="successMessage" class="alert success">
+    {{ successMessage }}
+  </div>
+
+  <!-- TODO: Display error message -->
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+    <!-- Customer Name -->
+    <div class="form-group">
+      <label for="customerName">Customer Name *</label>
+      <input
+        type="text"
+        id="customerName"
+        formControlName="customerName"
+        placeholder="Enter customer name"
+        [class.invalid]="isFieldInvalid('customerName')"
+      />
+      <div *ngIf="isFieldInvalid('customerName')" class="form-error">
+        {{ getErrorMessage('customerName') }}
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        placeholder="Enter email address"
+        [class.invalid]="isFieldInvalid('email')"
+      />
+      <div *ngIf="isFieldInvalid('email')" class="form-error">
+        {{ getErrorMessage('email') }}
+      </div>
+    </div>
+
+    <!-- Phone -->
+    <div class="form-group">
+      <label for="phone">Phone *</label>
+      <input
+        type="tel"
+        id="phone"
+        formControlName="phone"
+        placeholder="Enter phone number"
+        [class.invalid]="isFieldInvalid('phone')"
+      />
+      <div *ngIf="isFieldInvalid('phone')" class="form-error">
+        {{ getErrorMessage('phone') }}
+      </div>
+    </div>
+
+    <!-- Product -->
+    <div class="form-group">
+      <label for="productId">Product *</label>
+      <select
+        id="productId"
+        formControlName="productId"
+        [class.invalid]="isFieldInvalid('productId')"
+      >
+        <option value="">-- Select Product --</option>
+        <!-- TODO: Populate with products from API -->
+        <option *ngFor="let product of products" [value]="product.id">
+          {{ product.name }}
+        </option>
+      </select>
+      <div *ngIf="isFieldInvalid('productId')" class="form-error">
+        {{ getErrorMessage('productId') }}
+      </div>
+    </div>
+
+    <!-- Zone -->
+    <div class="form-group">
+      <label for="zone">Zone *</label>
+      <select
+        id="zone"
+        formControlName="zone"
+        [class.invalid]="isFieldInvalid('zone')"
+      >
+        <option value="">-- Select Zone --</option>
+        <option *ngFor="let zone of zones" [value]="zone">
+          {{ zone }}
+        </option>
+      </select>
+      <div *ngIf="isFieldInvalid('zone')" class="form-error">
+        {{ getErrorMessage('zone') }}
+      </div>
+    </div>
+
+    <!-- Age -->
+    <div class="form-group">
+      <label for="age">Age *</label>
+      <input
+        type="number"
+        id="age"
+        formControlName="age"
+        placeholder="Enter age (18-100)"
+        [class.invalid]="isFieldInvalid('age')"
+      />
+      <div *ngIf="isFieldInvalid('age')" class="form-error">
+        {{ getErrorMessage('age') }}
+      </div>
+    </div>
+
+    <!-- Insured Amount -->
+    <div class="form-group">
+      <label for="insuredAmount">Insured Amount (TND) *</label>
+      <input
+        type="number"
+        id="insuredAmount"
+        formControlName="insuredAmount"
+        placeholder="Enter insured amount (minimum 1000)"
+        [class.invalid]="isFieldInvalid('insuredAmount')"
+      />
+      <div *ngIf="isFieldInvalid('insuredAmount')" class="form-error">
+        {{ getErrorMessage('insuredAmount') }}
+      </div>
+    </div>
+
+    <!-- Start Date -->
+    <div class="form-group">
+      <label for="startDate">Start Date *</label>
+      <input
+        type="date"
+        id="startDate"
+        formControlName="startDate"
+        [class.invalid]="isFieldInvalid('startDate')"
+      />
+      <div *ngIf="isFieldInvalid('startDate')" class="form-error">
+        {{ getErrorMessage('startDate') }}
+      </div>
+    </div>
+
+    <!-- Duration -->
+    <div class="form-group">
+      <label for="duration">Duration (months) *</label>
+      <input
+        type="number"
+        id="duration"
+        formControlName="duration"
+        placeholder="Enter duration in months"
+        [class.invalid]="isFieldInvalid('duration')"
+      />
+      <div *ngIf="isFieldInvalid('duration')" class="form-error">
+        {{ getErrorMessage('duration') }}
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="primary"
+        [disabled]="loading"
+      >
+        <!-- TODO: Show loading spinner while submitting -->
+        <span *ngIf="!loading">Calculate Quote</span>
+        <span *ngIf="loading" class="loading"></span>
+      </button>
+      <button type="button" class="secondary" routerLink="/quotes">Cancel</button>
+    </div>
+  </form>
+</div>
