@@ -171,4 +171,26 @@ public class PricingService {
             return new ArrayList<>();
         }
     }
+
+
+    public List<QuoteResponse> getAllQuotes(Long productId, BigDecimal minPrice) {
+
+        List<Quote> quoteList;
+        if (productId != null && minPrice != null) {
+            quoteList = quoteRepository.findByProductId(productId)
+                    .stream()
+                    .filter(q -> q.getFinalPrice().compareTo(minPrice) >= 0)
+                    .toList();
+        } else if (productId != null) {
+            quoteList = quoteRepository.findByProductId(productId);
+        } else if (minPrice != null) {
+            quoteList = quoteRepository.findByFinalPriceAboveThreshold(minPrice);
+        } else {
+            quoteList = quoteRepository.findAll();
+        }
+        return quoteList.stream()
+                .map(q -> mapToResponse(q, deserializeRules(q.getAppliedRules())))
+                .toList();
+    }
+
 }

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -43,8 +44,9 @@ public class QuoteController {
      */
     @PostMapping
     public ResponseEntity<QuoteResponse> createQuote(@Valid @RequestBody QuoteRequest request) {
-        // TODO: Implement this endpoint
-        throw new UnsupportedOperationException("TODO: Implement createQuote endpoint");
+
+        QuoteResponse quoteResponse=pricingService.calculateQuote(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(quoteResponse);
     }
 
     /**
@@ -85,7 +87,8 @@ public class QuoteController {
     public ResponseEntity<List<QuoteResponse>> getAllQuotes(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Double minPrice) {
-        // TODO: Implement filtering and retrieval logic
-        throw new UnsupportedOperationException("TODO: Implement getAllQuotes endpoint");
+        BigDecimal minPriceDecimal = minPrice != null ? BigDecimal.valueOf(minPrice) : null;
+        List<QuoteResponse> responses = pricingService.getAllQuotes(productId, minPriceDecimal);
+        return ResponseEntity.ok(responses);
     }
 }
