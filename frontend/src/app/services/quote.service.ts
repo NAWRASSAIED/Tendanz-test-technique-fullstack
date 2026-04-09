@@ -43,7 +43,8 @@ export class QuoteService {
     // TODO: Send request body
     // TODO: Handle errors with catchError
     // TODO: Provide error feedback to user
-    throw new Error('Method not implemented');
+    return this.http.post<QuoteResponse>(`${this.apiUrl}${this.endpoint}`,request)
+                    .pipe(catchError(this.handleError));
   }
 
   /**
@@ -58,7 +59,8 @@ export class QuoteService {
   getQuote(id: number): Observable<QuoteResponse> {
     // TODO: GET from ${this.apiUrl}${this.endpoint}/${id}
     // TODO: Handle errors with catchError
-    throw new Error('Method not implemented');
+    return this.http.get<QuoteResponse> (`${this.apiUrl}${this.endpoint}/${id}`)
+                    .pipe(catchError(this.handleError));
   }
 
   /**
@@ -77,7 +79,16 @@ export class QuoteService {
     // TODO: Build HttpParams with optional filters
     // TODO: Pass params to HTTP request
     // TODO: Handle errors with catchError
-    throw new Error('Method not implemented');
+    let params=new HttpParams();
+    if(filters?.productId != null){
+      params=params.set('productId',filters.productId);
+    }
+     if(filters?.minPrice != null){
+      params=params.set('minPrice',filters.minPrice);
+    }
+    return this.http.get<QuoteResponse[]>(`${this.apiUrl}${this.endpoint}`,{params})
+                     .pipe(catchError(this.handleError));
+
   }
 
   /**
@@ -94,6 +105,8 @@ export class QuoteService {
   private handleError(error: any): Observable<never> {
     // TODO: Implement error handling
     console.error('Quote service error:', error);
-    return throwError(() => new Error('Failed to process quote'));
+    const message =
+    error?.error?.message || error?.message || 'Failed to process quote';
+    return throwError(() => new Error(message));
   }
 }
