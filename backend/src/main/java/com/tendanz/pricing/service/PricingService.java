@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -57,7 +59,30 @@ public class PricingService {
     @Transactional
     public QuoteResponse calculateQuote(QuoteRequest request) {
         // TODO: Implement this method
-        throw new UnsupportedOperationException("TODO: Implement calculateQuote");
+        Product product=productRepository.findById(request.getProductId()).orElseThrow(() ->new IllegalArgumentException("Product not found"));
+        Zone zone=zoneRepository.findByCode(request.getZoneCode()).orElseThrow(()->new IllegalArgumentException("Zone not found"));
+        PricingRule pricingRule= pricingRuleRepository.findByProductId(product.getId()).orElseThrow(() -> new IllegalArgumentException("pricing rule not found"));
+        AgeCategory ageCategory=AgeCategory.fromAge(request.getClientAge());
+        BigDecimal ageFactor=getAgeFactor(pricingRule,ageCategory);
+        BigDecimal finalPrice = pricingRule.getBaseRate().multiply(ageFactor).multiply(zone.getRiskCoefficient()).setScale(2, RoundingMode.HALF_UP);
+
+        List<String> appliedRules = new ArrayList<>();
+        appliedRules.add("Base Rate: " + pricingRule.getBaseRate());
+        appliedRules.add("Age category: " + ageCategory + " (factor: " + ageFactor + ")");
+        appliedRules.add("Zone: " + zone.getName() + " (coefficient: " + zone.getRiskCoefficient() + ")");
+        appliedRules.add("Final price = baseRate * ageFactor * zoneRiskCoefficient = " + finalPrice);
+        String rulesJson = convertRulesToJson(appliedRules);
+        Quote quote = Quote.builder()
+                           .product(product)
+                           .zone(zone)
+                           .clientName(request.getClientName())
+                           .clientAge(request.getClientAge())
+                           .basePrice(pricingRule.getBaseRate())
+                           .finalPrice(finalPrice)
+                           .appliedRules(rulesJson)
+                           .build();
+        quoteRepository.save(quote);
+        return mapToResponse(quote, appliedRules);
     }
 
     /**
