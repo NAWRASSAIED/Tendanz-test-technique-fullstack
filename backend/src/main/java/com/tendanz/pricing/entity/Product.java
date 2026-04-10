@@ -1,5 +1,7 @@
 package com.tendanz.pricing.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +32,7 @@ public class Product {
     private String description;
 
     @Column(name = "created_at", nullable = false, updatable = false)
+    @JsonSerialize(using = ToStringSerializer.class)
     private LocalDateTime createdAt;
 
     @PrePersist

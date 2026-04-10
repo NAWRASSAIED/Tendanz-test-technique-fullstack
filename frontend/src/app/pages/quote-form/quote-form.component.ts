@@ -61,9 +61,18 @@ export class QuoteFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // TODO: Load products from ProductService
-    // TODO: Populate this.products array
-    // TODO: Handle loading and error states
+  
+    this.loading=true;
+    this.productService.getProducts().subscribe({
+      next:(products) =>{
+        this.products=products;
+        this.loading=false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load products. Please refresh the page.';
+        this.loading = false;
+      }
+    });
   }
 
   /**
@@ -78,10 +87,40 @@ export class QuoteFormComponent implements OnInit {
    * - On error: show error message
    * - Always reset loading state
    */
+
   onSubmit(): void {
     this.submitted = true;
-    // TODO: Implement form submission
-    console.log('Form submitted (TODO: implement)');
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+
+    const { clientName, productId, zoneCode, clientAge } = this.form.value;
+
+    const request = {
+      clientName,
+      productId: Number(productId), 
+      zoneCode,
+      clientAge: Number(clientAge)
+    };
+
+    this.quoteService.createQuote(request).subscribe({
+      next: (quote) => {
+        this.successMessage = `Quote created successfully! Reference: #${quote.quoteId}`;
+        this.loading = false;
+        // Brief delay so the user sees the success message before navigating
+        setTimeout(() => this.router.navigate(['/quotes', quote.quoteId]), 1000);
+      },
+      error: (err) => {
+        this.errorMessage = err?.message || 'Failed to create quote. Please try again.';
+        this.loading = false;
+      }
+    });
   }
 
   /**

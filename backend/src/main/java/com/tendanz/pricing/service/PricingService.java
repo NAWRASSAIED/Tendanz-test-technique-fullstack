@@ -136,7 +136,9 @@ public class PricingService {
                 .basePrice(quote.getBasePrice())
                 .finalPrice(quote.getFinalPrice())
                 .appliedRules(appliedRules)
-                .createdAt(quote.getCreatedAt())
+                .createdAt(quote.getCreatedAt() != null
+                        ? quote.getCreatedAt().toString()
+                        : null)
                 .build();
     }
 

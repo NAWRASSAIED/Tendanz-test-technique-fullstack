@@ -38,7 +38,8 @@ export class ProductService {
   getProducts(): Observable<Product[]> {
     // TODO: GET from ${this.apiUrl}${this.endpoint}
     // TODO: Handle errors with catchError
-    throw new Error('Method not implemented');
+    return this.http.get<Product[]>(`${this.apiUrl}${this.endpoint}`)
+                    .pipe(catchError(this.handleError));
   }
 
   /**
