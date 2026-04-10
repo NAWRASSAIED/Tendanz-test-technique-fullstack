@@ -64,6 +64,7 @@
           <th>Zone</th>
           <th>Final Price (TND)</th>
           <th>Created Date</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -74,11 +75,27 @@
           <td>{{ quote.zoneName }}</td>
           <td class="price">{{ quote.finalPrice | number:'1.2-2' }}</td>
           <td>{{ quote.createdAt | date:'short' }}</td>
+          <td> <button class="pdf-btn" (click)="downloadPdf(quote.quoteId)">📄 PDF
+          </button></td>
         </tr>
       </tbody>
     </table>
   </div>
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
 
+  <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 0">
+    Previous
+  </button>
+
+  <div class="page-info">
+    Page <span>{{ currentPage + 1 }}</span> / {{ totalPages }}
+  </div>
+
+  <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">
+    Next
+  </button>
+
+</div>
   <!-- Empty State -->
   <div *ngIf="!loading && filteredQuotes.length === 0" class="empty-state">
     <p>No quotes found. <a routerLink="/quotes/new">Create one now</a></p>

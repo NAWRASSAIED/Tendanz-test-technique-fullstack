@@ -6,6 +6,9 @@ import com.tendanz.pricing.service.PricingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -84,11 +87,31 @@ public class QuoteController {
      * @return list of quotes matching filters
      */
     @GetMapping
-    public ResponseEntity<List<QuoteResponse>> getAllQuotes(
+    public ResponseEntity<Page<QuoteResponse>> getAllQuotes(
             @RequestParam(required = false) Long productId,
-            @RequestParam(required = false) Double minPrice) {
-        BigDecimal minPriceDecimal = minPrice != null ? BigDecimal.valueOf(minPrice) : null;
-        List<QuoteResponse> responses = pricingService.getAllQuotes(productId, minPriceDecimal);
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        BigDecimal minPriceDecimal =
+                minPrice != null ? BigDecimal.valueOf(minPrice) : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<QuoteResponse> responses =
+                pricingService.getAllQuotes(productId, minPriceDecimal, pageable);
+
         return ResponseEntity.ok(responses);
+    }
+    @GetMapping("/{id}/export-pdf")
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Long id) {
+
+        byte[] pdf = pricingService.exportQuotePdf(id);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=quote_" + id + ".pdf")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

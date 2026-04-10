@@ -49,6 +49,11 @@ export class QuoteListComponent implements OnInit {
   // Sort state
   sortField: 'date' | 'price' = 'date';
   sortDirection: 'asc' | 'desc' = 'desc';
+  currentPage = 0;
+  pageSize = 5;
+  totalPages = 0;
+  totalElements = 0;
+
 
   constructor(
     private quoteService: QuoteService,
@@ -56,24 +61,36 @@ export class QuoteListComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    this.loading = true;
+ ngOnInit(): void {
+    this.loadQuotes();
 
     this.productService.getProducts().subscribe({
-      next: (products) => (this.products = products),
-      error: (err) => console.warn('Failed to load products for filter:', err.message)
+      next: products => this.products = products,
+      error: err => this.errorMessage = err.message || "Failed to load Products"
     });
+  }
 
-    this.quoteService.getQuotes().subscribe({
-      next: (quotes) => {
-        this.quotes = quotes;
-        this.filteredQuotes = [...quotes];
+  private loadQuotes(): void {
+    this.loading = true;
+
+    const filters: any = {
+      page: this.currentPage,
+      size: this.pageSize
+    };
+
+    this.quoteService.getQuotes(filters).subscribe({
+      next: res => {
+        console.log('RAW response:', res);
+        this.filteredQuotes = res.content;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
+
         this.sortQuotes();
         this.loading = false;
       },
-      error: (err) => {
-        this.errorMessage = err.message || 'Failed to load quotes.';
+      error: err => {
         this.loading = false;
+        this.errorMessage = err.message || "Failed to load quotes";
       }
     });
   }
@@ -88,26 +105,41 @@ export class QuoteListComponent implements OnInit {
    * - Call sortQuotes() after receiving results
    * - Handle errors
    */
-  applyFilters(): void {
-    this.loading = true;
-    this.errorMessage = null;
+ applyFilters(): void {
+  const filters: {
+    productId?: number;
+    minPrice?: number;
+    page?: number;
+    size?: number;
+  } = {
+    page: 0,       // reset to first page on filter
+    size: this.pageSize
+  };
 
-    const filters: { productId?: number; minPrice?: number } = {};
-    if (this.selectedProductId != null) filters.productId = this.selectedProductId;
-    if (this.minPrice != null)          filters.minPrice  = this.minPrice;
-
-    this.quoteService.getQuotes(filters).subscribe({
-      next: (quotes) => {
-        this.filteredQuotes = quotes;
-        this.sortQuotes();
-        this.loading = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.message || 'Failed to apply filters.';
-        this.loading = false;
-      }
-    });
+  if (this.selectedProductId) {
+    filters.productId = this.selectedProductId;
   }
+  if (this.minPrice) {
+    filters.minPrice = this.minPrice;
+  }
+
+  this.loading = true;
+  this.currentPage = 0; 
+
+  this.quoteService.getQuotes(filters).subscribe({
+    next: res => {                         
+      this.filteredQuotes = res.content;  
+      this.totalPages = res.totalPages;
+      this.totalElements = res.totalElements;
+      this.sortQuotes();
+      this.loading = false;
+    },
+    error: (err) => {
+      this.loading = false;
+      this.errorMessage = err.message || "Failed to apply filters";
+    }
+  });
+}
 
   /**
    * Reset all filters and reload all quotes
@@ -116,6 +148,21 @@ export class QuoteListComponent implements OnInit {
     this.selectedProductId = null;
     this.minPrice = null;
     this.applyFilters();
+  }
+
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadQuotes();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadQuotes();
+    }
   }
 
   /**
@@ -160,5 +207,15 @@ export class QuoteListComponent implements OnInit {
    */
   viewQuote(id: number): void {
     this.router.navigate(['/quotes', id]);
+  }
+  downloadPdf(id: number): void {
+  this.quoteService.downloadQuotePdf(id).subscribe(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quote_${id}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  });
   }
 }

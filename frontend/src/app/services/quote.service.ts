@@ -74,21 +74,24 @@ export class QuoteService {
    *
    * TODO: Implement this method
    */
-  getQuotes(filters?: { productId?: number; minPrice?: number }): Observable<QuoteResponse[]> {
+  getQuotes(filters: { productId?: number; minPrice?: number; page?: number; size?: number; }): Observable<any> {
     // TODO: GET from ${this.apiUrl}${this.endpoint}
     // TODO: Build HttpParams with optional filters
     // TODO: Pass params to HTTP request
     // TODO: Handle errors with catchError
-    let params=new HttpParams();
-    if(filters?.productId != null){
-      params=params.set('productId',filters.productId);
-    }
-     if(filters?.minPrice != null){
-      params=params.set('minPrice',filters.minPrice);
-    }
-    return this.http.get<QuoteResponse[]>(`${this.apiUrl}${this.endpoint}`,{params})
-                     .pipe(catchError(this.handleError));
-
+    let params = new HttpParams();
+    if (filters.productId != null) params = params.set('productId', filters.productId);
+    if (filters.minPrice  != null) params = params.set('minPrice',  filters.minPrice);
+    params = params.set('page', filters.page ?? 0);
+    params = params.set('size', filters.size ?? 5);
+    return this.http
+      .get<any>(`${this.apiUrl}${this.endpoint}`, { params })
+      .pipe(catchError(this.handleError));
+  }
+  downloadQuotePdf(id: number) {
+    return this.http.get(`${this.apiUrl}${this.endpoint}/${id}/export-pdf`, {
+    responseType: 'blob'
+  });
   }
 
   /**
@@ -109,4 +112,5 @@ export class QuoteService {
     error?.error?.message || error?.message || 'Failed to process quote';
     return throwError(() => new Error(message));
   }
+
 }
