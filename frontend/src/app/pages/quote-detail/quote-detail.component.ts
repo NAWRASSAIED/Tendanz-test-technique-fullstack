@@ -38,10 +38,28 @@ export class QuoteDetailComponent implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit(): void {
-    // TODO: Get quote ID from route parameters
-    // TODO: Load quote from QuoteService
-    // TODO: Handle loading and error states
-    console.log('Quote detail component initialized (TODO: implement)');
+ngOnInit(): void {
+  const idParam = this.route.snapshot.paramMap.get('id');
+
+  if (!idParam) {
+    this.errorMessage = 'Invalid ID quote provided.';
+    return;
   }
+  const id = Number(idParam);
+  if (isNaN(id)) {
+    this.errorMessage = 'Invalid quote ID format.';
+    return;
+  }
+  this.loading = true;
+  this.quoteService.getQuote(id).subscribe({
+    next: (quote) => {
+      this.quote = quote;
+      this.loading = false;
+    },
+    error: (err) => {
+      this.errorMessage = err.message || 'Failed to load the quote details.';
+      this.loading = false;
+    }
+  });
+}
 }
